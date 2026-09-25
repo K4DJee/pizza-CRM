@@ -2,10 +2,10 @@ from sqlalchemy import Column, Integer, String,DateTime, func, CheckConstraint, 
 from ..base import Base
 import enum
 
-class UserRole(str, enum.Enum):
-    CUSTOMER = "customer"
-    KITCHEN = "kitchen"
-    ADMIN = "admin"
+# class UserRole(str, enum.Enum):
+#     CUSTOMER = "customer"
+#     KITCHEN = "kitchen"
+#     ADMIN = "admin"
 
 class User(Base):
     __tablename__ = "users"
@@ -16,7 +16,12 @@ class User(Base):
     patronymic = Column(String(250), nullable=True)
     age = Column(Integer, CheckConstraint('age >= 0 AND age <= 120'), nullable=False)
     password = Column(String, nullable=False) # нужно поставить ограничения
-    role = Column(Enum(UserRole, native_enum=False, length=20), nullable=False, default=UserRole.CUSTOMER)
+    role = Column(
+        String(20),
+        CheckConstraint("role IN ('customer', 'kitchen', 'admin')", name='check_role'),
+        nullable=False,
+        default='customer'
+    )
     # refreshToken = Column(String, nullable=False)
     mail = Column(String(50), nullable=False, unique=True) # нужно поставить ограничения
     createdAt = Column(DateTime(timezone=True), server_default=func.now()) # поменять на нижнее подчеркивание

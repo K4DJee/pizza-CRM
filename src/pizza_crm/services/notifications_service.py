@@ -1,5 +1,6 @@
 from fastapi_mail import ConnectionConfig, MessageSchema, MessageType, FastMail
 from ..config import config
+from ..exceptions import exceptions
 
 email_config = ConnectionConfig(
     MAIL_USERNAME= config.MAIL_USERNAME,
@@ -21,7 +22,7 @@ async def send_letter_to_email(subject: str, text: str, user_email: str):
 
     message = MessageSchema(
         subject=subject,
-        recipients=user_email,
+        recipients=[user_email],
         body=html,
         subtype=MessageType.html
     )
@@ -30,6 +31,8 @@ async def send_letter_to_email(subject: str, text: str, user_email: str):
         await fm.send_message(message)
 
         return {"message": "OTP has been succesfully sent in your email"}
-    except: 
-        raise ValueError("OTP has not been sent in your email")
+    except Exception as e: 
+        print(e)
+        raise exceptions.OTPErrorSending("OTP has not been sent in your email")
         
+    
