@@ -8,15 +8,14 @@ import jwt
 from ..models.tokens import Tokens
 from ..db.models.tokens import Token
 from ..config import config
-from ..schemas.user import ChangePasswordTwoRequest
 from . import db_service, redis_service, notifications_service
 from ..exceptions import exceptions
 
 
-async def register_auth_service(db: Session, data: RegisterUserRequest):
+async def register_auth_service(db: Session, data: RegisterUserRequest) -> User:
     existing_user = await db_service.find_user_by_email(db, data.email)
     if existing_user:
-        raise ValueError("User with same mail is exists")
+        raise ValueError("User with this mail is exists")
 
     hashed_password = hash_password(data.password)
 
@@ -25,7 +24,7 @@ async def register_auth_service(db: Session, data: RegisterUserRequest):
         surname = data.surname,
         patronymic = data.patronymic,
         age = data.age,
-        mail = data.mail,
+        mail = data.email,
         password = hashed_password
     )
 
@@ -35,7 +34,7 @@ async def register_auth_service(db: Session, data: RegisterUserRequest):
         db.commit()
     except IntegrityError:
         db.rollback()
-        raise ValueError("User with same email already exists")
+        raise ValueError("User with this email already exists")
 
     db.refresh(new_user)
     return new_user
@@ -45,7 +44,6 @@ async def login_auth_service(db: Session, data: LoginUserRequest) -> tuple[User,
        
     if  not existing_user:
         raise ValueError("Incorrect mail or password")
-    print(existing_user)
     if not verify_password(data.password, existing_user.password):
         raise ValueError("Incorrect mail or password")
 
@@ -119,7 +117,7 @@ def create_token(
     encoded_jwt = jwt.encode(to_encode, secret_key, algorithm= config.ALGORITHM)
     return encoded_jwt
 
-async def get_userdata(db: Session,  token: str):
+async def get_userdata_auth_service(db: Session,  token: str):
     payload = verify_token(token, config.JWT_ACCESS_SECRET_KEY)
     user_id = payload.get("sub")
     if user_id is None:
@@ -128,9 +126,18 @@ async def get_userdata(db: Session,  token: str):
 
     return user
 
+async def delete_user_profile_auth_service(db: Session, token: str):
+    payload = verify_token(token, config.JWT_ACCESS_SECRET_KEY)
+    user_id = payload.get("sub")
+    if user_id is None:
+        raise exceptions.InvalidTokenPayload("Invalid token payload")
+    await db_service.delete_user(db, int(user_id))
+
 async def gen_otp_send_email(db: Session, user_email: str) -> bool:
     try:
         user = await db_service.find_user_by_email(db, user_email)
+        if not user:
+            raise exceptions.UserNotFoundError("User with this email not found")
         subject = "OTP for changing password"
         otp = await redis_service.gen_otp(user.id)
         text = f"Insert this code {otp} for changing your password"
@@ -144,6 +151,8 @@ async def verify_otp_gen_reset_token_auth_service(
     email: str, otp: str
 ) -> str:
     user = await db_service.find_user_by_email(db, email)
+    if not user:
+        raise exceptions.UserNotFoundError("User with this email not found")
     reset_token = await redis_service.verify_otp_gen_reset_token(user.id, otp)
     return reset_token
 
@@ -152,6 +161,8 @@ async def verify_reset_token_change_password_auth_service(
     email: str, reset_token: str, new_password: str
 ) -> None:
     user = await db_service.find_user_by_email(db, email)
+    if not user:
+        raise exceptions.UserNotFoundError("User with this email not found")
     isValid = await redis_service.verify_reset_token(user.id, reset_token)
     if isValid is not True:
         raise exceptions.ResetTokenNotMatch("ResetToken don't match")

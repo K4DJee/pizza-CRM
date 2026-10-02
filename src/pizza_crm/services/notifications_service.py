@@ -35,4 +35,5 @@ async def send_letter_to_email(subject: str, text: str, user_email: str):
         print(e)
         raise exceptions.OTPErrorSending("OTP has not been sent in your email")
         
-    
+async def send_message_to_telegram():
+    pass

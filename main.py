@@ -48,3 +48,17 @@ async def forbidden(request: Request, exc: Exception):
         status_code=403, 
         content={"detail": str(exc)}
     )
+
+@app.exception_handler(exceptions.IngredientNotExists)
+async def server_error(request:Request, exc: Exception):
+    return JSONResponse(
+        status_code=404, 
+        content={"detail":str(exc)}
+    )
+
+@app.exception_handler(exceptions.ErrorCreatingDish)
+async def server_error(request:Request, exc: Exception):
+    return JSONResponse(
+        status_code=500, 
+        content={"detail":str(exc)}
+    )

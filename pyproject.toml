@@ -11,6 +11,9 @@ dependencies = [
     "alembic>=1.19.2",
     "bcrypt>=5.0.0",
     "fastapi[standard]>=0.141.1",
+    "httpx>=0.28.1",
+    "httpx2>=2.13.1",
+    "pytest>=9.1.1",
     "sqlalchemy>=2.0.52",
 ]
 

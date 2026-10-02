@@ -44,3 +44,9 @@ class InvalidAuthHeader(BaseAppException):
 
 class PermissionDenied(BaseAppException):
     pass
+
+class ErrorCreatingDish(BaseAppException):
+    pass
+
+class IngredientNotExists(BaseAppException):
+    pass

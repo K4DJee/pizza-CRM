@@ -117,10 +117,15 @@ async def get_profile(
     db: Session = Depends(get_db)
 ):
     token = credentials.credentials
-    user = await auth_service.get_userdata(db, token)
+    user = await auth_service.get_userdata_auth_service(db, token)
     return user # reponse_model сама уберёт лишний пароль 
 
 @router.delete("/me")
-async def gelete_profile():
-    
-    pass
+async def deelete_profile(
+    credentials: HTTPAuthorizationCredentials = Depends(security),
+    db: Session = Depends(get_db)
+):
+    token = credentials.credentials
+    await auth_service.delete_user_profile_auth_service(db, token)
+    return {"message": "Your profile was deleted"}
+
