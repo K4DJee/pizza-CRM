@@ -1,0 +1,57 @@
+# version: '3.8'
+
+# services:
+#   gateway:
+#     build: ./gateway
+#     ports:
+#       - "80:80"
+#     depends_on:
+#       - auth_service
+#       - order_service
+#     environment:
+#       - AUTH_SERVICE_URL=http://auth_service:8000
+#       - ORDER_SERVICE_URL=http://order_service:8000
+
+#   auth_service:
+#     build: ./auth_service
+#     expose:
+#       - "8000"
+#     environment:
+#       - DATABASE_URL=postgresql://user:password@postgres:5432/auth_db
+
+#   order_service:
+#     build: ./order_service
+#     expose:
+#       - "8000"
+#     environment:
+#       - DATABASE_URL=postgresql://user:password@postgres:5432/orders_db
+
+#   postgres:
+#     image: postgres:15
+#     environment:
+#       POSTGRES_USER: user
+#       POSTGRES_PASSWORD: password
+#     volumes:
+#       - postgres_data:/var/lib/postgresql/data
+
+# volumes:
+#   postgres_data:
+
+version: '3.8'
+
+services:
+  # API Gateway - единственная точка входа
+  gateway:
+    build: ./gateway
+    ports:
+      - "80:80"  # Клиенты стучатся на порт 80
+    depends_on:
+      - auth_service
+    environment:
+      - AUTH_SERVICE_URL=http://auth_service:8000
+
+  # Auth Service - внутренний сервис
+  auth_service:
+    build: ./auth_service
+    expose:
+      - "8000"  # Не открываем наружу, только внутри Docker-сети
