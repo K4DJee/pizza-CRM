@@ -10,6 +10,16 @@ jobs:
   test:
     runs-on: ubuntu-latest
 
+    env:
+      JWT_ACCESS_SECRET_KEY: "super_secret_access_key_very_long_and_random_string_1234567"
+      JWT_REFRESH_SECRET_KEY: "super_secret_refresh_key_very_long_and_random_string_0987654"
+      ACCESS_TOKEN_EXPIRE_MINUTES: "15"
+      REFRESH_TOKEN_EXPIRE_DAYS: "7"
+      MAIL_USERNAME: "test@example.com"
+      MAIL_PASSWORD: "test_password"
+      MAIL_FROM: "test@example.com"
+      MAIL_SERVER: "localhost"
+
     steps:
       - uses: actions/checkout@v4
 
@@ -31,6 +41,16 @@ jobs:
 
   unit_test:
     runs-on: ubuntu-latest
+
+    env:
+      JWT_ACCESS_SECRET_KEY: "super_secret_access_key_very_long_and_random_string_1234567"
+      JWT_REFRESH_SECRET_KEY: "super_secret_refresh_key_very_long_and_random_string_0987654"
+      ACCESS_TOKEN_EXPIRE_MINUTES: "15"
+      REFRESH_TOKEN_EXPIRE_DAYS: "7"
+      MAIL_USERNAME: "test@example.com"
+      MAIL_PASSWORD: "test_password"
+      MAIL_FROM: "test@example.com"
+      MAIL_SERVER: "localhost"
 
     steps:
       - uses: actions/checkout@v4
