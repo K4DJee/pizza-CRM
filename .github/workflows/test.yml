@@ -27,7 +27,7 @@ jobs:
 
       - name: Run Regression Tests
         run: |
-          uv pytest -v -s tests/integration
+          uv run pytest -v -s tests/integration
 
   unit_test:
     runs-on: ubuntu-latest
@@ -49,4 +49,4 @@ jobs:
 
       - name: Run Unit Tests
         run: |
-          uv pytest -v -s tests/unit
+          uv run pytest -v -s tests/unit
