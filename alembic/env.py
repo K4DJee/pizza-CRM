@@ -2,7 +2,7 @@ from logging.config import fileConfig
 from sqlalchemy import engine_from_config
 from sqlalchemy import pool
 from alembic import context
-
+import os
 from os.path import abspath, dirname
 import sys
 
@@ -70,8 +70,13 @@ def run_migrations_online() -> None:
     and associate a connection with the context.
 
     """
+    database_url = os.getenv("POSTGRES_DATABASE_URL")
+
+    if not database_url:
+        raise RuntimeError("POSTGRES_DATABASE_URL is not set")
+
     connectable = engine_from_config(
-        config.get_section(config.config_ini_section, {}),
+       {"sqlalchemy.url": database_url},
         prefix="sqlalchemy.",
         poolclass=pool.NullPool,
     )

@@ -2,9 +2,10 @@ import secrets
 import redis.asyncio as redis
 import uuid
 from ..exceptions import exceptions
+from ..config import config
 
 redis_port = 6379
-redis_client = redis.Redis(host='localhost', port=6379, decode_responses=True)
+redis_client = redis.Redis(host=config.REDIS_HOST, port=config.REDIS_PORT, decode_responses=True)
 
 async def gen_otp(user_id: int, exp = 600) -> str:
     pwd_reset_key = f"pwd_reset_otp:{user_id}"

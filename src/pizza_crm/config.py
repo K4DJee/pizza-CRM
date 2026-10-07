@@ -10,6 +10,9 @@ class Config(BaseSettings):
     MAIL_PASSWORD: str
     MAIL_FROM: str
     MAIL_SERVER: str
+    POSTGRES_DATABASE_URL: str
+    REDIS_HOST: str
+    REDIS_PORT: str
 
     # Указываем в model config путь к env файлу
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8")

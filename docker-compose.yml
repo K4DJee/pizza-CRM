@@ -1,0 +1,58 @@
+services:
+  pizza-crm-monolithic:
+    build: .
+    container_name: pizza-crm-monolithic
+    ports:
+      - "8000:8000"
+    environment:
+      JWT_ACCESS_SECRET_KEY: ${JWT_ACCESS_SECRET_KEY}
+      JWT_REFRESH_SECRET_KEY: ${JWT_REFRESH_SECRET_KEY}
+      ACCESS_TOKEN_EXPIRE_MINUTES: ${ACCESS_TOKEN_EXPIRE_MINUTES}
+      REFRESH_TOKEN_EXPIRE_DAYS: ${REFRESH_TOKEN_EXPIRE_DAYS}
+
+      MAIL_USERNAME: ${MAIL_USERNAME}
+      MAIL_PASSWORD: ${MAIL_PASSWORD}
+      MAIL_FROM: ${MAIL_FROM}
+      MAIL_SERVER: ${MAIL_SERVER}
+
+      POSTGRES_DATABASE_URL: ${POSTGRES_DATABASE_URL}
+      REDIS_HOST: ${REDIS_HOST}
+      REDIS_PORT: ${REDIS_PORT}
+
+
+    depends_on:
+      pizza-crm-db:
+        condition: service_healthy
+      pizza-crm-redis:
+        condition: service_healthy
+
+  pizza-crm-db:
+    image: postgres:16
+    container_name: pizza-crm-db
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: root
+      POSTGRES_DB: pizza_crm
+    ports:
+      - "5432:5432"
+    volumes:
+      - pizza_crm_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U admin -d pizza_crm"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  pizza-crm-redis:
+    image: redis:7-alpine
+    container_name: pizza-crm-redis
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+volumes:
+  pizza_crm_data:
