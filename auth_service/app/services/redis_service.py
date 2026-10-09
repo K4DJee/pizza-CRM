@@ -1,8 +1,7 @@
 import secrets
-import redis.asyncio as redis
 import uuid
 from exceptions import exceptions
-from core import redis_client
+from core.redis_client import redis_client
 
 async def gen_otp(user_id: int, exp = 600) -> str:
     pwd_reset_key = f"pwd_reset_otp:{user_id}"
