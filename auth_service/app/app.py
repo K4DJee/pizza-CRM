@@ -1,7 +1,7 @@
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
-from .exceptions import exceptions
-from auth_service.app.api.v1.routers.auth import router as auth_router
+from exceptions import exceptions
+from api.v1.routers.auth import router as auth_router
 
 app = FastAPI(title="Auth Service")
 

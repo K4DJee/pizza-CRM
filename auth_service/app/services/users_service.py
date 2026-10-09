@@ -1,0 +1,137 @@
+from sqlalchemy.orm import Session
+from schemas.users import RegisterUserRequest, LoginUserRequest
+from db.models.user import User
+from sqlalchemy.exc import IntegrityError
+import datetime
+from models.tokens import Tokens
+from db.models.tokens import Token
+from config import config
+from . import db_service
+from . import redis_service
+from exceptions import exceptions
+from core import security
+import httpx
+
+http_client = httpx.AsyncClient( 
+    timeout=5.0
+)
+
+
+async def register_auth_service(db: Session, data: RegisterUserRequest) -> User:
+    existing_user = await db_service.find_user_by_email(db, data.email)
+    if existing_user:
+        raise ValueError("User with this mail is exists")
+
+    hashed_password = security.hash_password(data.password)
+
+    new_user = User(
+        name=data.name,
+        surname = data.surname,
+        patronymic = data.patronymic,
+        age = data.age,
+        mail = data.email,
+        password = hashed_password
+    )
+
+    db.add(new_user)
+
+    try:
+        db.commit()
+    except IntegrityError:
+        db.rollback()
+        raise ValueError("User with this email already exists")
+
+    db.refresh(new_user)
+    return new_user
+
+async def login_auth_service(db: Session, data: LoginUserRequest) -> tuple[User, Tokens]:
+    existing_user = await db_service.find_user_by_email(db, data.email)
+       
+    if  not existing_user:
+        raise ValueError("Incorrect mail or password")
+    if not security.verify_password(data.password, existing_user.password):
+        raise ValueError("Incorrect mail or password")
+
+    tokens = security.create_tokens_pair(str(existing_user.id), existing_user.role)
+
+    return existing_user, tokens
+
+async def refresh_token_auth_service(db:Session, refresh_token: str) -> tuple[Tokens, int]:
+    payload = security.verify_token(refresh_token, config.JWT_REFRESH_SECRET_KEY)
+    user_id = payload.get("sub")
+    # проверка на существование пользователя
+    user = await db_service.find_user_by_id(db, int(user_id))
+
+    # 3. Генерируем  Access Token и refresh 
+    tokens = security.create_tokens_pair(str(user.id), user.role)
+
+    # 5. Возвращаем новый Access Token
+    return tokens, int(user.id)
+
+async def save_refresh_token_to_db(db: Session, user_id: int, refresh_token: str, user_agent:str):
+    now = datetime.datetime.now(datetime.timezone.utc)
+    expires_at =  now + datetime.timedelta(days=int(config.REFRESH_TOKEN_EXPIRE_DAYS))
+
+    db_token = Token(
+        user_id = user_id,
+        refresh_token = refresh_token,
+        expires_at = expires_at,
+        user_agent = user_agent
+    )
+
+    db.add(db_token)
+    db.commit()
+
+
+async def get_userdata_auth_service(db: Session,  token: str):
+    payload = security.verify_token(token, config.JWT_ACCESS_SECRET_KEY)
+    user_id = payload.get("sub")
+    if user_id is None:
+        raise exceptions.InvalidTokenPayload("Invalid token payload")
+    user = await db_service.find_user_by_id(db, int(user_id))
+
+    return user
+
+async def delete_user_profile_auth_service(db: Session, token: str):
+    payload = security.verify_token(token, config.JWT_ACCESS_SECRET_KEY)
+    user_id = payload.get("sub")
+    if user_id is None:
+        raise exceptions.InvalidTokenPayload("Invalid token payload")
+    await db_service.delete_user(db, int(user_id))
+
+async def gen_otp_send_email(db: Session, user_email: str) -> bool:
+    try:
+        user = await db_service.find_user_by_email(db, user_email)
+        if not user:
+            raise exceptions.UserNotFoundError("User with this email not found")
+        subject = "OTP for changing password"
+        otp = await redis_service.gen_otp(user.id)
+        text = f"Insert this code {otp} for changing your password"
+
+        # await notifications_service.send_letter_to_email(subject, text, user_email)
+        return True
+    except ValueError:
+        raise
+
+async def verify_otp_gen_reset_token_auth_service(
+    db: Session,
+    email: str, otp: str
+) -> str:
+    user = await db_service.find_user_by_email(db, email)
+    if not user:
+        raise exceptions.UserNotFoundError("User with this email not found")
+    reset_token = await redis_service.verify_otp_gen_reset_token(user.id, otp)
+    return reset_token
+
+async def verify_reset_token_change_password_auth_service(
+    db: Session,
+    email: str, reset_token: str, new_password: str
+) -> None:
+    user = await db_service.find_user_by_email(db, email)
+    if not user:
+        raise exceptions.UserNotFoundError("User with this email not found")
+    isValid = await redis_service.verify_reset_token(user.id, reset_token)
+    if isValid is not True:
+        raise exceptions.ResetTokenNotMatch("ResetToken don't match")
+    new_hashed_password = security.hash_password(new_password)
+    await db_service.update_user_password(db, user.id, new_hashed_password)

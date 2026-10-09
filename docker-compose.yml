@@ -55,3 +55,32 @@ services:
     build: ./auth_service
     expose:
       - "8000"  # Не открываем наружу, только внутри Docker-сети
+    environment:
+      JWT_ACCESS_SECRET_KEY: "super_secret_access_key_very_long_and_random_string_1234567"
+      JWT_REFRESH_SECRET_KEY: "super_secret_refresh_key_very_long_and_random_string_0987654"
+      ACCESS_TOKEN_EXPIRE_MINUTES: 15
+      REFRESH_TOKEN_EXPIRE_DAYS: 7
+      DATABASE_URL: "postgresql://auth_user:auth_password@auth_db:5432/auth_db"
+      REDIS_HOST: "#"
+      REDIS_PORT:: 6379
+    depends_on:
+      - auth_db
+
+  auth_db:
+    image: postgres:15
+    environment:
+      POSTGRES_DB: auth_db
+      POSTGRES_USER: auth_user
+      POSTGRES_PASSWORD: auth_password
+    ports:
+      - "5432:5432"  # Для локальной разработки
+    volumes:
+      - auth_db_data:/var/lib/postgresql/data
+    
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+
+volumes:
+  auth_db_data:
