@@ -148,38 +148,47 @@ async def proxy_change_password_1(
     except RequestError as e:
         raise exceptions.RequestError(f"Auth Service недоступен: {str(e)}")
 
-# @router.post("/change-password-stage-2")
-# async def proxy_change_password_2(
-#     response: Response,
-#     data: auth.ChangePasswordTwoRequest,
-# ):
-#     try:
-#         response = await http_client.post(
-#             url=f"{config.AUTH_SERVICE_URL}/api/v1/auth/change-password-stage-2", 
-#             json=data.model_dump() 
-#         )
+@router.post("/change-password-stage-2")
+async def proxy_change_password_2(
+    response: Response,
+    data: auth.ChangePasswordTwoRequest,
+):
+    try:
+        response = await http_client.post(
+            url=f"{config.AUTH_SERVICE_URL}/api/v1/auth/change-password-stage-2", 
+            json=data.model_dump() 
+        )
 
-#         response.set_cookie(
-#             key="refresh_token",
-#             value=response["AccessToken"],
-#             httponly=True,
-#             secure=False,
-#             samesite="lax",
-#             max_age=config.REFRESH_TOKEN_EXPIRE_DAYS * 24 * 60 * 60
-#         )
+        try:
+            content = response.json()
+        except Exception:
+            content = {"detail": response.text}
 
-#         try:
-#             content = response.json()
-#         except Exception:
-#             content = {"detail": response.text}
+        client_response = JSONResponse(
+            status_code=response.status_code,
+            content=content
+        )
 
-#         return JSONResponse(
-#             status_code=response.status_code,
-#             content=content
-#         )
+        if client_response.status_code >= 400:
+            return client_response
 
-#     except RequestError as e:
-#         raise exceptions.RequestError(f"Auth Service недоступен: {str(e)}")
+        client_response.set_cookie(
+            key="reset_token",
+            value=content.get("ResetToken"),
+            httponly=True,
+            secure=False,
+            samesite="lax",
+            max_age=config.REFRESH_TOKEN_EXPIRE_DAYS * 24 * 60 * 60
+        )
+
+        return JSONResponse(
+            status_code=response.status_code,
+            content=content
+        )
+    
+    except RequestError as e:
+        raise exceptions.RequestError(f"Auth Service недоступен: {str(e)}")
+    
 
 # @router.post("/change-password-stage-3")
 # async def proxy_change_password_3(

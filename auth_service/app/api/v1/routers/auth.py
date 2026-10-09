@@ -68,19 +68,10 @@ async def change_password_1(
 
 @router.post("/change-password-stage-2")
 async def change_password_2(
-    response: Response,
     data: ChangePasswordTwoRequest,
     db: Session = Depends(get_db)
 ):
     reset_token = await users_service.verify_otp_gen_reset_token_auth_service(db, data.email, data.otp)
-    # response.set_cookie(
-    #     key="reset_token",
-    #     value=reset_token,
-    #     httponly=True,
-    #     secure=False,
-    #     samesite="lax",
-    #     max_age=config.REFRESH_TOKEN_EXPIRE_DAYS * 24 * 60 * 60
-    # )
 
     return {
         "ResetToken": reset_token,
@@ -89,11 +80,10 @@ async def change_password_2(
 
 @router.post("/change-password-stage-3")
 async def change_password_3(
-    request: Request,
     data: ChangePasswordThreeRequest,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    reset_token: str = Body(embed=True),
 ):
-    reset_token = request.cookies.get("reset_token")
     await users_service.verify_reset_token_change_password_auth_service(db, data.email, reset_token, data.new_password)
     return {"message": "Password succesfully changed!"}
 
