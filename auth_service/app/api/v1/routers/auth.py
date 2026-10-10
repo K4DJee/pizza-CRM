@@ -1,4 +1,5 @@
 from fastapi import FastAPI, APIRouter, HTTPException, status, Depends, Request, Response, Cookie, Body
+from httpx import Headers
 from sqlalchemy.orm import Session
 from services import users_service
 from schemas.users import RegisterUserRequest, LoginUserRequest, UserResponse, ChangePasswordOneRequest, ChangePasswordTwoRequest, ChangePasswordThreeRequest
@@ -6,6 +7,7 @@ from db.session import get_db
 from config import config
 from exceptions import exceptions
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+from typing import Annotated
 
 router = APIRouter(tags=['Authentication'], prefix='/api/v1/auth')
 

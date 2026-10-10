@@ -230,38 +230,36 @@ async def proxy_change_password_3(
     except RequestError as e:
         raise exceptions.RequestError(f"Auth Service недоступен: {str(e)}")
 
-# @router.get("/me", response_model=auth.UserResponse)
-# async def proxy_get_profile(
-#     credentials: HTTPAuthorizationCredentials = Depends(security),
-# ):
-#     try:
-#         token = credentials.credentials
-#         response = await http_client.get(
-#             url=f"{config.AUTH_SERVICE_URL}/api/v1/auth/me", 
-#             json=token 
-#         )
+@router.get("/me", response_model=auth.UserResponse)
+async def proxy_get_profile(
+    credentials: HTTPAuthorizationCredentials = Depends(security),
+):
+    try:
+        token = credentials.credentials
+        response = await http_client.get(
+            url=f"{config.AUTH_SERVICE_URL}/api/v1/auth/me", 
+            headers={
+                "Authorization": f"Bearer {token}" 
+            }
+        )
 
-#         response.set_cookie(
-#             key="refresh_token",
-#             value=response["AccessToken"],
-#             httponly=True,
-#             secure=False,
-#             samesite="lax",
-#             max_age=config.REFRESH_TOKEN_EXPIRE_DAYS * 24 * 60 * 60
-#         )
+        try:
+            content = response.json()
+        except Exception:
+            content = {"detail": response.text}
 
-#         try:
-#             content = response.json()
-#         except Exception:
-#             content = {"detail": response.text}
+        client_response = JSONResponse(
+            status_code=response.status_code,
+            content=content
+        )
 
-#         return JSONResponse(
-#             status_code=response.status_code,
-#             content=content
-#         )
+        if client_response.status_code >= 400:
+            return client_response
 
-#     except RequestError as e:
-#         raise exceptions.RequestError(f"Auth Service недоступен: {str(e)}")
+        return client_response
+
+    except RequestError as e:
+        raise exceptions.RequestError(f"Auth Service недоступен: {str(e)}")
 
 # @router.delete("/me")
 # async def proxy_delete_profile(
