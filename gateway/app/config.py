@@ -3,6 +3,7 @@ from pydantic_settings import SettingsConfigDict, BaseSettings
 class Config(BaseSettings):
     AUTH_SERVICE_URL: str
     ORDER_SERVICE_URL: str
+    CATALOG_SERVICE_URL: str
 
     JWT_ACCESS_SECRET_KEY: str
     JWT_REFRESH_SECRET_KEY: str

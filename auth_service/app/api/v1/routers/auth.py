@@ -1,13 +1,15 @@
 from fastapi import FastAPI, APIRouter, HTTPException, status, Depends, Request, Response, Cookie, Body
 from httpx import Headers
 from sqlalchemy.orm import Session
+from schemes import notification
 from services import users_service
-from schemas.users import RegisterUserRequest, LoginUserRequest, UserResponse, ChangePasswordOneRequest, ChangePasswordTwoRequest, ChangePasswordThreeRequest
+from schemes.users import RegisterUserRequest, LoginUserRequest, UserResponse, ChangePasswordOneRequest, ChangePasswordTwoRequest, ChangePasswordThreeRequest
 from db.session import get_db  
 from config import config
 from exceptions import exceptions
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from typing import Annotated
+from services import notification_service
 
 router = APIRouter(tags=['Authentication'], prefix='/api/v1/auth')
 
@@ -64,9 +66,11 @@ async def change_password_1(
     data: ChangePasswordOneRequest,
     db: Session = Depends(get_db)
 ):
-    response = await users_service.gen_otp_send_email(db, data.email)   
-    if response is True:
+    response = await users_service.gen_otp_send_email(db, data.email)  
+    if response is True: 
         return {"message": "OTP has been succesfully sent in your email"}
+    else:
+        raise exceptions.OTPErrorSending("Error sending OTP in your email")
 
 @router.post("/change-password-stage-2")
 async def change_password_2(

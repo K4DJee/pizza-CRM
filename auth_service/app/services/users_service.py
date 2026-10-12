@@ -1,5 +1,7 @@
 from sqlalchemy.orm import Session
-from schemas.users import RegisterUserRequest, LoginUserRequest
+from schemes import notification
+from services import notification_service
+from schemes.users import RegisterUserRequest, LoginUserRequest
 from db.models.user import User
 from sqlalchemy.exc import IntegrityError
 import datetime
@@ -107,10 +109,14 @@ async def gen_otp_send_email(db: Session, user_email: str) -> bool:
         subject = "OTP for changing password"
         otp = await redis_service.gen_otp(user.id)
         text = f"Insert this code {otp} for changing your password"
-
-        # await notifications_service.send_letter_to_email(subject, text, user_email)
+        notification_data = notification.SendToLetter(
+            subject = subject,
+            text = text,
+            user_email = user_email
+        )
+        await notification_service.proxy_letter_to_email(data=notification_data)
         return True
-    except ValueError:
+    except ValueError as e:
         raise
 
 async def verify_otp_gen_reset_token_auth_service(

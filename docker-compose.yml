@@ -62,8 +62,20 @@ services:
       REFRESH_TOKEN_EXPIRE_DAYS: 7
       DATABASE_URL: "postgresql://auth_user:auth_password@auth_db:5432/auth_db"
       REDIS_URL: "redis://redis:6379/0"
+      NOTIFICATION_SERVICE_URL: "http://notification_service:8003"
     depends_on:
       - auth_db
+
+  notification_service:
+    build: ./notification_service
+    expose:
+      - "8003"  # Не открываем наружу, только внутри Docker-сети
+    environment:
+      MAIL_USERNAME: "k4djexfullstack@gmail.com"
+      MAIL_FROM: "k4djexfullstack@gmail.com"
+      MAIL_SERVER: "smtp.gmail.com"
+      MAIL_PASSWORD: "phmtfpzbymrsppjb"
+
 
   auth_db:
     image: postgres:15

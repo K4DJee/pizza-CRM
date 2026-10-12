@@ -5,7 +5,7 @@ from fastapi.responses import JSONResponse
 from httpclient import http_client
 from exceptions import exceptions
 from httpx import RequestError
-from schemas import auth
+from schemes import auth
 from config import config
 
 router = APIRouter(tags=['Authentication'], prefix='/api/v1/auth')

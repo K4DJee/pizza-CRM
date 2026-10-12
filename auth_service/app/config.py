@@ -9,6 +9,8 @@ class Config(BaseSettings):
     DATABASE_URL: str
     REDIS_URL: str
 
+    NOTIFICATION_SERVICE_URL: str
+
     # Указываем в model config путь к env файлу
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8")
 

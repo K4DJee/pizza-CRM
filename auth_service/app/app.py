@@ -52,6 +52,7 @@ async def server_error(request:Request, exc: Exception):
         content={"detail":str(exc)}
     )
 
+@app.exception_handler(exceptions.RequestError)
 @app.exception_handler(exceptions.ErrorCreatingDish)
 async def server_error(request:Request, exc: Exception):
     return JSONResponse(
