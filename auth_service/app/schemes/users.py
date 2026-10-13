@@ -17,6 +17,7 @@ class UserResponse(BaseModel):
     name: str
     surname: str
     patronymic: str
+    role: str
     age: int
     mail: EmailStr
     updatedAt: datetime.datetime # поменять на _

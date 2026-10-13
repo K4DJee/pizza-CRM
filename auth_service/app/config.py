@@ -6,7 +6,7 @@ class Config(BaseSettings):
     ALGORITHM: str = "HS256" # Можно задать значение по умолчанию
     ACCESS_TOKEN_EXPIRE_MINUTES: int
     REFRESH_TOKEN_EXPIRE_DAYS: int
-    DATABASE_URL: str
+    DATABASE_AUTH_URL: str
     REDIS_URL: str
 
     NOTIFICATION_SERVICE_URL: str
