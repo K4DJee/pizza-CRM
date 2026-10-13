@@ -8,7 +8,7 @@ app = FastAPI(title="Catalog Service")
 app.include_router(catalog_router)
 
 @app.exception_handler(exceptions.DishNotFound)
-async def user_not_found_exception_handler(request: Request, exc: exceptions.UserNotFoundError):
+async def user_not_found_exception_handler(request: Request, exc: Exception):
     return JSONResponse(
         status_code=404,
         content={"detail": str(exc)},
@@ -43,6 +43,7 @@ async def server_error(request:Request, exc: Exception):
         content={"detail":str(exc)}
     )
 
+@app.exception_handler(exceptions.InternalServerError)
 @app.exception_handler(exceptions.RequestError)
 @app.exception_handler(exceptions.ErrorCreatingDish)
 async def server_error(request:Request, exc: Exception):

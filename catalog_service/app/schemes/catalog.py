@@ -1,5 +1,9 @@
+from __future__ import annotations #откладывает проверку типов 
+
 from pydantic import BaseModel, ConfigDict
 from decimal import Decimal
+
+
 class CatalogResponseSchema(BaseModel):
     id: int
     title: str

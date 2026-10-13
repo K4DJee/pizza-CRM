@@ -1,12 +1,12 @@
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy import create_engine
-from base import Base
+from db.base import Base
 from config import config
 
 # Сюда импортировать все модели, чтобы sqlalchemy видел их
-from models.catalog import Catalog
-from models.ingredient import Ingredient
-from models.composition import Composition
+from db.models.catalog import Catalog
+from db.models.ingredient import Ingredient
+from db.models.composition import Composition
 
 
 # POSTGRES_DATABASE_URL="postgresql+psycopg://admin:root@localhost:5432/pizza_crm"

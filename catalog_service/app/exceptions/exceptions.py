@@ -1,3 +1,6 @@
+from unittest.mock import Base
+
+
 class BaseAppException(Exception):
     """Базовый класс для всех исключений приложения"""
     pass
@@ -21,4 +24,7 @@ class IngredientNotExists(BaseAppException):
     pass
 
 class RequestError(BaseAppException):
+    pass
+
+class InternalServerError(BaseAppException):
     pass
