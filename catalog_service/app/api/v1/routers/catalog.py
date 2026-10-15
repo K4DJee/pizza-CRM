@@ -7,12 +7,12 @@ from schemes.catalog import CatalogResponseSchema, CatalogCreateSchema
 
 router = APIRouter(tags=['Catalog'], prefix='/api/v1')
 
-# @router.get("/catalog", response_model=list[CatalogResponseSchema])
-# async def get_catalog(
-#     db: Session = Depends(get_db)
-# ):
-#     catalog = await catalog_service.get_catalog_catalog_service(db)
-#     return catalog
+@router.get("/catalog", response_model=list[CatalogResponseSchema])
+async def get_catalog(
+    db: Session = Depends(get_db)
+):
+    catalog = await catalog_service.get_catalog_catalog_service(db)
+    return catalog
 
 # @router.post("/catalog/new", response_model=CatalogResponseSchema)
 # async def add_new_catalog(
