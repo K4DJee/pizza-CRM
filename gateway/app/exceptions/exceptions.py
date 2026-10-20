@@ -55,3 +55,6 @@ class ErrorCreatingDish(BaseAppException):
 
 class IngredientNotExists(BaseAppException):
     pass
+
+class InternalServerError(BaseAppException):
+    pass

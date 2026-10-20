@@ -8,6 +8,7 @@ services:
       - "80:80"  # Клиенты стучатся на порт 80
     depends_on:
       - auth_service
+      - catalog_service
     environment:
       AUTH_SERVICE_URL: ${AUTH_SERVICE_URL}
       ORDER_SERVICE_URL: ${ORDER_SERVICE_URL}
@@ -36,7 +37,7 @@ services:
   notification_service:
     build: ./notification_service
     expose:
-      - "8003"  # Не открываем наружу, только внутри Docker-сети
+      - "8000"  # Не открываем наружу, только внутри Docker-сети
     environment:
       MAIL_USERNAME: ${MAIL_USERNAME}
       MAIL_FROM: ${MAIL_FROM}
@@ -46,7 +47,7 @@ services:
   catalog_service:
     build: ./catalog_service
     expose:
-      - "8002"  # Не открываем наружу, только внутри Docker-сети
+      - "8000"  # Не открываем наружу, только внутри Docker-сети
     environment:
       DATABASE_CATALOG_URL: ${DATABASE_CATALOG_URL}
       AUTH_SERVICE_URL: ${AUTH_SERVICE_URL}
@@ -57,9 +58,9 @@ services:
   auth_db:
     image: postgres:15
     environment:
-      POSTGRES_AUTH_DB: ${POSTGRES_AUTH_DB}
-      POSTGRES_AUTH_USER: ${POSTGRES_AUTH_USER}
-      POSTGRES_AUTH_PASSWORD: ${POSTGRES_AUTH_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_AUTH_DB}
+      POSTGRES_USER: ${POSTGRES_AUTH_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_AUTH_PASSWORD}
     ports:
       - "5432:5432"  # Для локальной разработки
     volumes:
@@ -68,9 +69,9 @@ services:
   catalog_db:
     image: postgres:15
     environment:
-      POSTGRES_CATALOG_DB: ${POSTGRES_CATALOG_DB}
-      POSTGRES_CATALOG_USER: ${POSTGRES_CATALOG_USER}
-      POSTGRES_CATALOG_PASSWORD: ${POSTGRES_CATALOG_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_CATALOG_DB}
+      POSTGRES_USER: ${POSTGRES_CATALOG_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_CATALOG_PASSWORD}
     ports:
       - "5433:5433"  # Для локальной разработки
     volumes:

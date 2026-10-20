@@ -29,13 +29,6 @@ async def otp_error_sending(request: Request, exc:Exception):
         content={"detail":str(exc)}
     )
 
-@app.exception_handler(exceptions.PermissionDenied)
-async def forbidden(request: Request, exc: Exception):
-    return JSONResponse(
-        status_code=403, 
-        content={"detail": str(exc)}
-    )
-
 @app.exception_handler(exceptions.IngredientNotExists)
 async def server_error(request:Request, exc: Exception):
     return JSONResponse(

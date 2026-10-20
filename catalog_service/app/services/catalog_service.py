@@ -1,4 +1,5 @@
 from fastapi import Response, Depends
+import sqlalchemy
 from sqlalchemy.orm import Session
 from db.models.catalog import Catalog
 from db.models.composition import Composition
@@ -31,7 +32,8 @@ async def add_new_catalog_item_catalog_service(db: Session, new_item: catalog.Ca
 
         for comp_data in new_item.composition:
             ingredient = await db_service.find_ingredient_by_id(db, comp_data.ingredient.id)
-            if not ingredient:
+            print("ingredient: ", ingredient)
+            if ingredient is None: # вот этот блок кода не работает корректно
                 db.rollback()
                 raise exceptions.IngredientNotExists("Ingredient with this id doesn't exist. New dish not added.")
 
@@ -49,6 +51,7 @@ async def add_new_catalog_item_catalog_service(db: Session, new_item: catalog.Ca
         for comp in catalog_item.composition:
             db.refresh(comp, attribute_names=["ingredient"])
         return catalog_item
+
     except Exception as e:
         db.rollback()
         print(str(e))

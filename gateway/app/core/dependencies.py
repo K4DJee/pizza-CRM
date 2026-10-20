@@ -17,7 +17,7 @@ def require_role(allowed_roles:list[str]):
         return user_context
     return role_checker
 
-async def get_current_user_context(credentials: HTTPAuthorizationCredentials = Depends(security)) -> UserContext | None:
+async def get_current_user_context(credentials: HTTPAuthorizationCredentials = Depends(security)) -> UserContext:
     token = credentials.credentials
 
     try:
@@ -28,20 +28,11 @@ async def get_current_user_context(credentials: HTTPAuthorizationCredentials = D
             }
         )
 
-        try:
-            content: UserContext= response.json()
-        except Exception:
-            content = {"detail": response.text}
+        print(response.json())
+        if response.status_code >= 400:
+            raise HTTPException(status_code=response.status_code, detail=response.text)
 
-        client_response = JSONResponse(
-            status_code=response.status_code,
-            content=content
-        )
-
-        if client_response.status_code >= 400:
-            return client_response
-
-        return content
+        return UserContext(**response.json()) # нужно обязательно разобраться в этом
 
     except RequestError as e:
         raise exceptions.RequestError(f"Auth Service недоступен: {str(e)}")
