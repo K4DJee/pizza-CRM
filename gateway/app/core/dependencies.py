@@ -1,6 +1,6 @@
 from fastapi import Request, HTTPException, status, Header, Depends
 from fastapi.responses import JSONResponse
-from httpx import RequestError
+from httpx import RequestError, HTTPStatusError
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from models.user import UserContext
 from exceptions import exceptions
@@ -28,14 +28,18 @@ async def get_current_user_context(credentials: HTTPAuthorizationCredentials = D
             }
         )
 
+        if response.is_error:
+            try:
+                detail = response.json().get("detail", response.text)
+            except ValueError:
+                detail = response.text
+
         print(response.json())
         if response.status_code >= 400:
-            raise HTTPException(status_code=response.status_code, detail=response.text)
+            raise HTTPException(status_code=response.status_code, detail=detail)
 
-        return UserContext(**response.json()) # нужно обязательно разобраться в этом
+        return UserContext(**response.json())
 
+    # except HTTPException:
     except RequestError as e:
         raise exceptions.RequestError(f"Auth Service недоступен: {str(e)}")
-    except Exception as e:
-        print(e)
-        raise exceptions.InternalServerError("Internal Server Error")

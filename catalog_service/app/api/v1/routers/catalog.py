@@ -21,22 +21,20 @@ async def add_new_catalog(
     catalog_item = await catalog_service.add_new_catalog_item_catalog_service(db, new_item)
     return catalog_item
 
-# @router.delete("/catalog/{item_id}")
-# async def delete_catalog_item(
-#     item_id: int, 
-#     db: Session = Depends(get_db),
-#     user_context = Depends(require_role(["kitchen", "admin"])) 
-#     ):
-#     await catalog_service.delete_catalog_item_catalog_service(db, item_id)
-#     return {"message": "Dish was deleted from catalog"}
+@router.delete("/catalog/{item_id}")
+async def delete_catalog_item(
+    item_id: int, 
+    db: Session = Depends(get_db),
+    ):
+    await catalog_service.delete_catalog_item_catalog_service(db, item_id)
+    return {"message": "Dish was deleted from catalog"}
 
-# @router.post("/catalog/{item_id}/update")
-# async def add_new_catalog(
-#     item_id: int, 
-#     new_item:CatalogCreateSchema, 
-#     db: Session = Depends(get_db),
-#     user_context = Depends(require_role(["kitchen", "admin"])) 
-# ):
-#     catalog_item = await catalog_service.update_catalog_item_catalog_service(db, item_id, new_item)
-#     return {"message": "Dish was updated", "catalog_item": catalog_item}
+@router.put("/catalog/{item_id}")
+async def update_catalog_item(
+    item_id: int, 
+    new_item:CatalogCreateSchema, 
+    db: Session = Depends(get_db),
+):
+    catalog_item = await catalog_service.update_catalog_item_catalog_service(db, item_id, new_item)
+    return {"message": "Dish was updated", "catalog_item": catalog_item}
 
