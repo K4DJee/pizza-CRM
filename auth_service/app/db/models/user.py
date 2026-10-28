@@ -18,6 +18,8 @@ class User(Base):
         default='customer'
     )
     # refreshToken = Column(String, nullable=False)
+    # phone
+    # tg_id
     mail = Column(String(50), nullable=False, unique=True) # нужно поставить ограничения
     createdAt = Column(DateTime(timezone=True), server_default=func.now()) # поменять на нижнее подчеркивание
     updatedAt = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())

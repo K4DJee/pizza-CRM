@@ -54,6 +54,30 @@ services:
     depends_on:
      - catalog_db
 
+  kitchen_service:
+    build: ./kitchen_service
+    expose:
+      - "8000"  # Не открываем наружу, только внутри Docker-сети
+    environment:
+      DATABASE_KITCHEN_URL: ${DATABASE_KITCHEN_URL}
+      AUTH_SERVICE_URL: ${AUTH_SERVICE_URL}
+      ORDER_SERVICE_URL: ${ORDER_SERVICE_URL}
+      CATALOG_SERVICE_URL: ${CATALOG_SERVICE_URL}
+    depends_on:
+     - kitchen_db
+
+  order_service:
+    build: ./order_service
+    expose:
+      - "8000"  # Не открываем наружу, только внутри Docker-сети
+    environment:
+      DATABASE_ORDER_URL: ${DATABASE_ORDER_URL}
+      AUTH_SERVICE_URL: ${AUTH_SERVICE_URL}
+      CATALOG_SERVICE_URL: ${CATALOG_SERVICE_URL}
+      KITCHEN_SERVICE_URL: ${KITCHEN_SERVICE_URL}
+    depends_on:
+     - order_db
+
 
   auth_db:
     image: postgres:15
@@ -73,9 +97,33 @@ services:
       POSTGRES_USER: ${POSTGRES_CATALOG_USER}
       POSTGRES_PASSWORD: ${POSTGRES_CATALOG_PASSWORD}
     ports:
-      - "5433:5433"  # Для локальной разработки
+      - "5433:5433"
     volumes:
       - catalog_db_data:/var/lib/postgresql/data
+
+  kitchen_db:
+    image: postgres:15
+    environment:
+      POSTGRES_DB: ${POSTGRES_KITCHEN_DB}
+      POSTGRES_USER: ${POSTGRES_KITCHEN_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_KITCHEN_PASSWORD}
+    ports:
+      - "5434:5434"
+    volumes:
+      - kitchen_db_data:/var/lib/postgresql/data
+
+  order_db:
+    image: postgres:15
+    environment:
+      POSTGRES_DB: ${POSTGRES_ORDER_DB}
+      POSTGRES_USER: ${POSTGRES_ORDER_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_ORDER_PASSWORD}
+    ports:
+      - "5435:5435"
+    volumes:
+      - order_db_data:/var/lib/postgresql/data
+
+    
     
   redis:
     image: redis:7-alpine
@@ -85,3 +133,5 @@ services:
 volumes:
   auth_db_data:
   catalog_db_data:
+  kitchen_db_data:
+  order_db_data:

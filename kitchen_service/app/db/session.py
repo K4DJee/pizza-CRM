@@ -4,11 +4,10 @@ from .base import Base
 from config import config
 
 # Сюда импортировать все модели, чтобы sqlalchemy видел их
-from .models.user import User
+from db.models.kitchen_queue import KitchenQueue
+from db.models.ready_dish import ReadyDish
 
-# POSTGRES_DATABASE_URL="postgresql+psycopg://admin:root@localhost:5432/pizza_crm"
-
-engine = create_engine(config.DATABASE_AUTH_URL, connect_args={}, pool_pre_ping=True)
+engine = create_engine(config.DATABASE_KITCHEN_URL, connect_args={}, pool_pre_ping=True)
 # Base.metadata.create_all(bind=engine) - эта строка не нужна, тк используется alembic
 SessionLocal = sessionmaker(autoflush=False, bind=engine)
 
